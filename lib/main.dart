@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:post_app/pages/detail_page.dart';
 import 'package:post_app/pages/time_line_page.dart';
 import 'package:post_app/providers/draft_provider.dart';
 import 'package:post_app/providers/post_provider.dart';
@@ -15,6 +16,7 @@ void main() {
       ChangeNotifierProvider(create: (_) => PostProvider()),
       ChangeNotifierProvider(create: (_) => DraftProvider()),
       ChangeNotifierProvider(create: (_) => UserProvider()),
+      ChangeNotifierProvider(create: (_) => SendReply()),
     ],
     child: const MyApp(),
   ));

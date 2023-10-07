@@ -1,23 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:post_app/pages/profile_page.dart';
+import 'package:provider/provider.dart';
 
 import '../models/post_model.dart';
+
+class SendReply with ChangeNotifier {
+  bool _isSending = false;
+  String? _errorMessage;
+
+  bool get isSending => _isSending;
+  String? get errorMessage => _errorMessage;
+
+  Future<void> sendReply() async {
+    _isSending = true;
+    notifyListeners();
+    // API通信
+    await Future.delayed(const Duration(seconds: 5), () => throw Error())
+        .then((value) => null)
+        .catchError((error) {
+      _errorMessage = error.toString();
+    });
+    _isSending = false;
+    notifyListeners();
+  }
+}
 
 class DetailPage extends StatelessWidget {
   final Post post;
   const DetailPage({super.key, required this.post});
+
   @override
   Widget build(BuildContext context) {
     const String title = "投稿詳細";
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    final SendReply provider = Provider.of<SendReply>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: SafeArea(
-        child: Container(
+    return WillPopScope(
+      onWillPop: () async => !provider.isSending,
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: !provider.isSending,
+          title: const Text(title),
+        ),
+        body: Container(
           margin: const EdgeInsets.all(4),
           padding: const EdgeInsets.all(10),
           child: SingleChildScrollView(
@@ -42,15 +68,18 @@ class DetailPage extends StatelessWidget {
                         ),
                       ),
                       Expanded(
-                        child: Text(
-                          post.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        child: Container(
+                          margin: const EdgeInsetsDirectional.only(start: 10.0),
+                          child: Text(
+                            post.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: Text(
-                          DateFormat.Hm().format(DateTime.now()),
+                          DateFormat.Hm().format(post.postedAt),
                           style: const TextStyle(color: Colors.black54),
                         ),
                       ),
@@ -86,28 +115,31 @@ class DetailPage extends StatelessWidget {
                         );
                       },
                     );
-                    // showAboutDialog(context: context);
                   },
-                  child: SizedBox(
-                    height: MediaQuery.of(context).size.height / 5,
-                    child: Container(
-                      color: Colors.blueGrey.shade50,
+                  child: Container(
+                    margin: const EdgeInsetsDirectional.only(top: 4.0),
+                    child: SizedBox(
+                      height: MediaQuery.of(context).size.height / 4,
                       child: Container(
-                        margin: EdgeInsets.all(4.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flexible(
-                              child: Text(post.description),
-                            )
-                          ],
+                        color: Colors.blueGrey.shade50,
+                        child: Container(
+                          margin: const EdgeInsets.all(4.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Flexible(
+                                child: SingleChildScrollView(
+                                    child: Text(post.description)),
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
                 Container(
-                  margin: EdgeInsets.symmetric(vertical: 2.0),
+                  margin: const EdgeInsets.symmetric(vertical: 2.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -144,29 +176,61 @@ class DetailPage extends StatelessWidget {
                   ),
                 ),
                 const Divider(),
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text("${post.name} さんに返信する"),
-                  Form(
-                    key: formKey,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          child: TextFormField(
-                            enabled: true,
-                          ),
+                Row(
+                  mainAxisAlignment:MainAxisAlignment.start,
+                  children: [
+                    Text("${post.name} さんにメッセージを送る"),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () =>
+                            FocusManager.instance.primaryFocus?.unfocus(),
+                        behavior: HitTestBehavior.opaque,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                                enabled: !context.read<SendReply>().isSending),
+                          ],
                         ),
-                        OutlinedButton(
-                            onPressed: () {},
-                            child: const Icon(
-                              Icons.send,
-                              color: Colors.blue,
-                            )),
-                      ],
+                      ),
                     ),
-                  ),
-                ])
+                    OutlinedButton.icon(
+                        onPressed: provider.isSending
+                            ? null
+                            : () async {
+                                FocusScope.of(context).unfocus();
+
+                                ScaffoldMessengerState state =
+                                    ScaffoldMessenger.of(context);
+
+                                // APIに送信処理
+                                await provider.sendReply();
+                                state.showSnackBar(SnackBar(
+                                  content: Text(provider.errorMessage == null
+                                      ? '送信が完了しました！'
+                                      : '送信に失敗しました。'),
+                                  duration: const Duration(seconds: 2),
+                                  backgroundColor: provider.errorMessage != null
+                                      ? Colors.red
+                                      : null,
+                                ));
+                              },
+                        icon: Container(
+                          width: 24,
+                          height: 24,
+                          padding: const EdgeInsets.all(2),
+                          child: provider.isSending
+                              ? const CircularProgressIndicator()
+                              : const Icon(Icons.send),
+                        ),
+                        label: const Text('送信')),
+                  ],
+                )
               ],
             ),
           ),

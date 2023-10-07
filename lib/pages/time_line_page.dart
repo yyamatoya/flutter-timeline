@@ -118,7 +118,7 @@ class TimeLinePage extends StatelessWidget {
                     context.read<PostProvider>().addPost(Post(
                         1,
                         DateFormat.Hm().format(DateTime.now()),
-                        "a".padRight(140, 'a'),
+                        "a".padRight(500, 'a'),
                         0.33,
                         DateTime.now()));
                   },
