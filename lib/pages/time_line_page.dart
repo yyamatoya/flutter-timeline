@@ -1,6 +1,8 @@
-import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:post_app/models/post_model.dart';
 import 'package:post_app/models/user_model.dart';
@@ -16,25 +18,25 @@ import 'profile_page.dart';
 class TimeLinePage extends StatelessWidget {
   final String title = "タイムライン";
 
-  // List<Post> data = <Post>[
-  //   Post(1, '山田', 'description', 0.33),
-  //   Post(1, '本田', 'これはテストです', 0.33),
-  //   Post(1, 'Yuji Yamatoya', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  //   Post(1, 'aaa', 'description', 0.33),
-  // ];
+  // 投稿データを取得する
+  Future<bool> fetchPost(BuildContext context) async {
+    PostProvider provider = Provider.of<PostProvider>(context, listen: false);
+    try {
+      final Response response =
+          await http.get(Uri.parse('http://10.0.2.2:8080/api/posts'));
+      if (response.statusCode == 200) {
+        List<dynamic> body = jsonDecode(response.body);
+        List<Post> posts = body.map((e) => Post.fromJson(e)).toList();
+        provider.setPosts(posts);
+        print('set Posts');
+        return true;
+      }
+      throw Exception('Failed to load posts');
+    } catch (err) {
+      print(err.toString());
+    }
+    return false;
+  }
 
   final User _user = User(1, "Yuji Yamatoya", []);
 
@@ -49,7 +51,6 @@ class TimeLinePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Post> posts = context.watch<PostProvider>().posts;
     return WillPopScope(
       onWillPop: () async => false,
       child: DefaultTabController(
@@ -83,14 +84,32 @@ class TimeLinePage extends StatelessWidget {
                 ),
                 body: TabBarView(children: [
                   Container(
-                    margin: const EdgeInsets.only(top: 2),
-                    child: ListView.builder(
-                      itemBuilder: (context, index) {
-                        return createPostWidget(context, posts[index]);
-                      },
-                      itemCount: posts.length,
-                    ),
-                  ),
+                      margin: const EdgeInsets.only(top: 2),
+                      child: RefreshIndicator(
+                        onRefresh: () async {
+                          await fetchPost(context);
+                        },
+                        child: FutureBuilder(
+                          future: fetchPost(context),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState !=
+                                ConnectionState.done) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            }
+                            return Consumer<PostProvider>(
+                                builder: (context, provider, _) {
+                              return ListView.builder(
+                                itemBuilder: (context, index) {
+                                  return createPostWidget(
+                                      context, provider.posts[index]);
+                                },
+                                itemCount: provider.posts.length,
+                              );
+                            });
+                          },
+                        ),
+                      )),
                   const Scaffold()
                 ]),
                 drawer: Drawer(
@@ -115,12 +134,12 @@ class TimeLinePage extends StatelessWidget {
                     //       builder: (context) => const DraftPage(),
                     //     ));
 
-                    context.read<PostProvider>().addPost(Post(
-                        1,
-                        DateFormat.Hm().format(DateTime.now()),
-                        "a".padRight(500, 'a'),
-                        0.33,
-                        DateTime.now()));
+                    // context.read<PostProvider>().addPost(Post(
+                    //     id: 1,
+                    //     name: DateFormat.Hm().format(DateTime.now()),
+                    //     description: "a".padRight(500, 'a'),
+                    //     emote: 0.33,
+                    //     postedAt: DateTime.now()));
                   },
                   tooltip: 'add',
                   child: const Icon(Icons.add),
