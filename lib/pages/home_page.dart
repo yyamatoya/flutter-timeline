@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../Widget/common_bottom_navigation_item.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -21,17 +20,8 @@ class HomePage extends StatelessWidget {
               style: TextStyle(fontSize: 32.0),
             ),
           ),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 1,
-          items: commonBottomNavigationItems(),
-          onTap: (value) {
-            if (value == 1) {
-              Navigator.pushReplacementNamed(context, '/third');
-            }
-          },
-        ),
-      ),
+          ),
+        )
     );
   }
 }

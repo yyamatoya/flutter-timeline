@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:post_app/models/user_model.dart';
-import 'package:post_app/providers/user_provider.dart';
-import 'package:provider/provider.dart';
-
 import '../models/post_model.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   final Post post;
   const ProfilePage({super.key, required this.post});
 
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     String src = "https://wallpapercave.com/dwp1x/wp2552717.jpg";
@@ -34,12 +35,12 @@ class ProfilePage extends StatelessWidget {
                       onTap: () => {},
                       child: CircleAvatar(
                         radius: 24,
-                        child: Text(post.name),
+                        child: Text(widget.post.name),
                       ),
                     ),
                     Expanded(
                       child: Text(
-                        post.name,
+                        widget.post.name,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),

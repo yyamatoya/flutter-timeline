@@ -1,26 +1,36 @@
-import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 
 class Post {
   final int id;
-  final String name;
-  final String description;
-  final double emote;
-  final DateTime postedAt;
+  String name;
+  String description;
+  int nices;
+  final DateTime createdAt;
+  List<Post> replies;
 
   Post({
     required this.id,
     required this.name,
     required this.description,
-    required this.emote,
-    required this.postedAt,
+    required this.nices,
+    required this.createdAt,
+    required this.replies,
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
+    List<dynamic> replies = json['replies'] ?? [];
+    List<Post> rep = replies.isNotEmpty
+        ? replies.map((e) {
+            Logger().d(e);
+            return Post.fromJson(e);
+          }).toList()
+        : [];
     return Post(
         id: json['id'],
-        name: "",
+        name: json['name'],
         description: json['description'],
-        emote: 0.0,
-        postedAt: DateTime.parse(json['input_at']));
+        nices: json['nices'],
+        createdAt: DateTime.parse(json['created_at']),
+        replies: rep);
   }
 }
