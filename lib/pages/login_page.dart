@@ -49,7 +49,8 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
         alertDialog(context, null, const Text('ログインに失敗しました'));
         return;
       }
-
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("ログインに成功しました！")));
       // アプリ内部にユーザを読み込む
       context.read<UserProvider>().setUser(usr);
       LocalDataHelper.setUserId = loginId;
@@ -77,70 +78,93 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
-          return Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: TextFormField(
-                          onChanged: (_) => _formKey.currentState!.validate(),
-                          controller: _loginIdController,
-                          keyboardType: TextInputType.visiblePassword,
-                          enabled: !_isLoading,
-                          decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              labelText: 'ログインID'),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return "ログインIDが未入力です";
-                            }
-                            return null;
-                          })),
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: TextFormField(
-                        onChanged: (_) => _formKey.currentState!.validate(),
-                        controller: _passwordController,
-                        keyboardType: TextInputType.visiblePassword,
-                        enabled: !_isLoading,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                            border: OutlineInputBorder(), labelText: 'パスワード'),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return "パスワードが未入力です";
-                          }
-                          return null;
-                        }),
-                  ),
-                  Padding(
-                      padding: const EdgeInsets.all(15.0),
-                      child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                              onPressed: _isLoading
-                                  ? null
-                                  : () async => onPressedLoginButton(),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 3,
-                                      ),
-                                    )
-                                  : const Text('ログイン')))),
-                ],
-              ));
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: SingleChildScrollView(
+              child: SizedBox(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Form(
+                        key: _formKey,
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height / 3,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              TextFormField(
+                                  maxLines: 1,
+                                  controller: _loginIdController,
+                                  keyboardType: TextInputType.visiblePassword,
+                                  enabled: !_isLoading,
+                                  decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      labelText: 'ログインID'),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return "ログインIDが未入力です";
+                                    }
+                                    return null;
+                                  }),
+                              TextFormField(
+                                  maxLines: 1,
+                                  controller: _passwordController,
+                                  keyboardType: TextInputType.visiblePassword,
+                                  enabled: !_isLoading,
+                                  obscureText: true,
+                                  decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      labelText: 'パスワード'),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return "パスワードが未入力です";
+                                    }
+                                    return null;
+                                  }),
+                              SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                      onPressed: _isLoading
+                                          ? null
+                                          : () async => onPressedLoginButton(),
+                                      child: _isLoading
+                                          ? const SizedBox(
+                                              height: 24,
+                                              width: 24,
+                                              child: CircularProgressIndicator(
+                                                color: Colors.white,
+                                                strokeWidth: 3,
+                                              ),
+                                            )
+                                          : const Text('ログイン'))),
+                            ],
+                          ),
+                        )),
+                    const Divider(thickness: 1.0),
+                    SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                            onPressed: () => {},
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 3,
+                                    ),
+                                  )
+                                : const Text('新規登録はこちら'))),
+                  ],
+                ),
+              ),
+            ),
+          );
         });
   }
 
   @override
   Widget build(BuildContext context) {
-    final GlobalKey<FormState> _formState = GlobalKey<FormState>();
-
     const String src =
         "https://img.freepik.com/free-vector/hand-painted-watercolor-pastel-sky-background_23-2148902771.jpg?w=2000";
 
@@ -148,11 +172,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
       onWillPop: () async => false,
       child: Scaffold(
         body: Container(
-          decoration: const BoxDecoration(
-              image: DecorationImage(
-                  image: NetworkImage(src),
-                  fit: BoxFit.fitHeight,
-                  opacity: 0.4)),
+          decoration: BoxDecoration(color: Colors.blue.shade50),
           child: Center(
             child: Column(
               children: <Widget>[

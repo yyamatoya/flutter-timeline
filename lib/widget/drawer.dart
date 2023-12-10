@@ -6,7 +6,6 @@ import 'package:post_app/providers/user_provider.dart';
 import 'package:post_app/widget/create_post.dart';
 import 'package:provider/provider.dart';
 
-import '../models/user_model.dart';
 import 'avatar.dart';
 
 class DrawerWidget extends StatefulWidget {
@@ -60,10 +59,13 @@ class _DrawerWidgetState extends State<DrawerWidget> {
                     child: SizedBox(
                         height: mediaSize.height / 10,
                         child: ElevatedButton.icon(
-                          icon: const Icon(Icons.create_rounded),
-                          label: const Text("投稿する"),
-                          onPressed: () => showPostDialog(context),
-                        )),
+                            icon: const Icon(Icons.create_rounded),
+                            label: const Text("投稿する"),
+                            onPressed: () async => await showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return const DialogContentWidget();
+                                }))),
                   ),
                 ],
               ),

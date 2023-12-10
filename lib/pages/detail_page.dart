@@ -52,7 +52,15 @@ class _DetailPageState extends State<DetailPage> {
 
   void getDetailPost() async {
     setState(() {
-      post = ApiHelper().getDetailPost(widget.id);
+      post = Future(() => Post(
+          id: 1,
+          name: '適当太郎',
+          description: '適当に書いてみた',
+          nices: 10,
+          replies: [],
+          createdAt: DateTime.now()));
+
+      // post = ApiHelper().getDetailPost(widget.id);
     });
   }
 
@@ -60,7 +68,7 @@ class _DetailPageState extends State<DetailPage> {
     Logger().d("pushed Nice id=${post.id}");
     int? nices = await ApiHelper().pushNice(post);
 
-    Logger().d("pushed Nice @${nices}}");
+    Logger().d("pushed Nice @$nices");
     setState(() {
       if (nices != null) {
         post.nices = nices;
@@ -139,6 +147,36 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
+  Future<dynamic> showReportDialog() {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return AlertDialog(
+          content: const Text('通報しますか？'),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'はい',
+                  style: TextStyle(color: Colors.red),
+                )),
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'いいえ',
+                  style: TextStyle(color: Colors.blue),
+                )),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isSending = context.watch<ReplyProvider>().isSending;
@@ -173,9 +211,9 @@ class _DetailPageState extends State<DetailPage> {
                                       page: PageEnum.profile,
                                       post: snapshot.data!),
                                   child: CircleAvatar(
-                                    radius: 24,
+                                    radius: 20,
                                     child: Center(
-                                        child: Text(snapshot.data!.name)),
+                                        child: Text(snapshot.data!.name[0])),
                                   ),
                                 ),
                                 Expanded(
@@ -202,36 +240,7 @@ class _DetailPageState extends State<DetailPage> {
                             ),
                           ),
                           GestureDetector(
-                            onLongPress: () {
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (_) {
-                                  return AlertDialog(
-                                    content: const Text('通報しますか？'),
-                                    actions: [
-                                      TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text(
-                                            'はい',
-                                            style: TextStyle(color: Colors.red),
-                                          )),
-                                      TextButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text(
-                                            'いいえ',
-                                            style:
-                                                TextStyle(color: Colors.blue),
-                                          )),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
+                            onLongPress: () async => await showReportDialog(),
                             child: Container(
                               margin:
                                   const EdgeInsetsDirectional.only(top: 4.0),

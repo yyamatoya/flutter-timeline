@@ -41,7 +41,17 @@ class _TimeLineWidgetState extends State<TimeLineWidget> {
 
   // 投稿データを取得する
   Future<List<Post>> fetchPost() async {
-    List<Post> posts = await ApiHelper().getPosts();
+    List<Post> posts = [
+      Post(
+          id: 1,
+          name: '適当太郎',
+          description: '適当に書いてみた',
+          nices: 10,
+          replies: [],
+          createdAt: DateTime.now())
+    ];
+
+    // await ApiHelper().getPosts();
     return posts;
   }
 
@@ -64,7 +74,8 @@ class _TimeLineWidgetState extends State<TimeLineWidget> {
 
   Widget getAvatarIcon(Post post) {
     return CircleAvatar(
-      child: Text(post.name),
+      radius: 20,
+      child: Text(post.name[0]),
     );
   }
 

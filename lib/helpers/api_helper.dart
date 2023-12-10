@@ -25,6 +25,9 @@ class ApiHelper {
 
   Future<User?> login(
       {required String loginId, required String password}) async {
+    // テスト用
+    return User(id: 1, name: 'Yuji Yamatoya', posts: 5);
+
     try {
       final Response res = await http
           .post(Uri.parse('$domain/api/login'),
